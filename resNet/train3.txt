@@ -1,0 +1,122 @@
+
+(.venv) PS C:\Users\jonah\development\roadsigndetection\resNet> python.exe .\train3.py
+Using device: cuda:0
+Epoch 0/9
+----------
+Starting phase: train
+(.venv) PS C:\Users\jonah\development\roadsigndetection\resNet> python.exe .\train3.py
+Using device: cuda:0
+Epoch 0/9
+----------
+Starting phase: train
+Dataloader length: 9803
+train Loss: 0.1877 Acc: 0.9556s: 3.6877
+Starting phase: val
+Dataloader length: 3158       
+val Loss: 0.0309 Acc: 0.9902s: 0.0000
+
+Epoch 1/9
+----------
+Starting phase: train
+Dataloader length: 9803
+train Loss: 0.0127 Acc: 0.9978s: 3.8637
+Starting phase: val
+Dataloader length: 3158
+val Loss: 0.0257 Acc: 0.9929s: 0.0000
+
+Epoch 2/9
+----------
+Starting phase: train
+Dataloader length: 9803
+train Loss: 0.0082 Acc: 0.9986s: 2.5292
+Starting phase: val
+Dataloader length: 3158
+val Loss: 0.0518 Acc: 0.9857s: 0.0000
+
+Epoch 3/9
+----------
+Starting phase: train
+Dataloader length: 9803
+train Loss: 0.0063 Acc: 0.9989s: 3.3677
+Starting phase: val
+Dataloader length: 3158
+val Loss: 0.0303 Acc: 0.9920s: 0.0000
+
+Epoch 4/9
+----------
+Starting phase: train
+Dataloader length: 9803
+train Loss: 0.0052 Acc: 0.9990s: 3.6629
+Starting phase: val
+Dataloader length: 3158
+val Loss: 0.0346 Acc: 0.9918s: 0.0000
+
+Epoch 5/9
+----------
+Starting phase: train
+Dataloader length: 9803
+train Loss: 0.0044 Acc: 0.9993s: 2.3196
+Starting phase: val
+Dataloader length: 3158
+val Loss: 0.0230 Acc: 0.9928s: 0.0000
+
+Epoch 6/9
+----------
+Starting phase: train
+Dataloader length: 9803
+train Loss: 0.0022 Acc: 0.9997s: 2.5078
+Starting phase: val
+Dataloader length: 3158
+val Loss: 0.0293 Acc: 0.9907s: 0.0000
+
+Epoch 7/9
+----------
+Starting phase: train
+Dataloader length: 9803
+train Loss: 0.0039 Acc: 0.9992s: 2.6444
+Starting phase: val
+Dataloader length: 3158
+val Loss: 0.0237 Acc: 0.9933s: 0.0000
+
+Epoch 8/9
+----------
+Starting phase: train
+Dataloader length: 9803
+train Loss: 0.0022 Acc: 0.9997s: 1.8759
+Starting phase: val
+Dataloader length: 3158
+val Loss: 0.0508 Acc: 0.9918s: 0.0000
+
+Epoch 9/9
+----------
+Starting phase: train
+Dataloader length: 9803
+train Loss: 0.0020 Acc: 0.9995s: 2.3542
+Starting phase: val
+Dataloader length: 3158
+val Loss: 0.0289 Acc: 0.9926s: 0.0000
+
+Traceback (most recent call last):
+  File "C:\Users\jonah\development\roadsigndetection\resNet\train3.py", line 158, in <module>
+    plt.plot(epochs, train_acc_history, 'r', label='Training accuracy')
+  File "C:\Users\jonah\development\roadsigndetection\.venv\Lib\site-packages\matplotlib\pyplot.py", line 3708, in plot    
+    return gca().plot(
+           ^^^^^^^^^^^
+  File "C:\Users\jonah\development\roadsigndetection\.venv\Lib\site-packages\matplotlib\axes\_axes.py", line 1779, in plot
+    lines = [*self._get_lines(self, *args, data=data, **kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jonah\development\roadsigndetection\.venv\Lib\site-packages\matplotlib\axes\_base.py", line 296, in __call__
+    yield from self._plot_args(
+               ^^^^^^^^^^^^^^^^
+    y = _check_1d(xy[1])
+        ^^^^^^^^^^^^^^^^
+  File "C:\Users\jonah\development\roadsigndetection\.venv\Lib\site-packages\matplotlib\cbook.py", line 1411, in _check_1d
+    return np.atleast_1d(x)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\jonah\development\roadsigndetection\.venv\Lib\site-packages\numpy\core\shape_base.py", line 65, in atleast_1d
+    ary = asanyarray(ary)
+          ^^^^^^^^^^^^^^^
+  File "C:\Users\jonah\development\roadsigndetection\.venv\Lib\site-packages\torch\_tensor.py", line 1087, in __array__
+    return self.numpy()
+           ^^^^^^^^^^^^
+TypeError: can't convert cuda:0 device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.

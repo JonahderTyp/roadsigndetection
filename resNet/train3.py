@@ -89,7 +89,7 @@ def train_model(model, criterion, optimizer, dataloaders, dataset_sizes, num_epo
                 print(f'Phase: {phase}, Batch: {batch_idx}, Loss: {loss.item():.4f}', end='\r')
 
             epoch_loss = running_loss / dataset_sizes[phase]
-            epoch_acc = running_corrects.double() / dataset_sizes[phase]
+            epoch_acc = running_corrects.double().cpu() / dataset_sizes[phase]
 
             if phase == 'train':
                 train_loss_history.append(epoch_loss)
