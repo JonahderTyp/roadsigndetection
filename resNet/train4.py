@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import models
+from pytorch_lightning.loggers import CSVLogger
 
 class GTSRBDataset(Dataset):
     def __init__(self, csv_file, root_dir, transform=None):
@@ -22,12 +23,6 @@ class GTSRBDataset(Dataset):
         img_name = os.path.join(self.root_dir, str(self.annotations.iloc[idx]["Path"]))
         image = Image.open(img_name)
         label = int(self.annotations.iloc[idx]["ClassId"])
-
-        # Debugging: Print the path and label
-        # print(f"Image path: {img_name}, Label: {label}")
-
-        if label < 0 or label >= 43:
-            raise ValueError(f"Label {label} is out of range!")
 
         if self.transform:
             image = self.transform(image)
@@ -99,7 +94,14 @@ def main():
 
     model = ResNetGTSRB()
 
-    trainer = pl.Trainer(max_epochs=10, num_nodes=1 if torch.cuda.is_available() else 0)
+    logger = CSVLogger("logs", name="resnet_gtsrb")
+
+    trainer = pl.Trainer(
+        max_epochs=3,
+        accelerator='gpu' if torch.cuda.is_available() else 'cpu',
+        devices=1 if torch.cuda.is_available() else None,
+        logger=logger
+    )
     trainer.fit(model, data_module)
     trainer.validate(model, data_module.val_dataloader())
 

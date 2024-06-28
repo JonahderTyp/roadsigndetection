@@ -164,3 +164,4 @@ cython_debug/
 gtsrb-german-traffic-sign
 *.h5
 *.zip
+resNet/logs/*
