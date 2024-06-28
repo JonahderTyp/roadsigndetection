@@ -68,6 +68,10 @@ class ResNetGTSRB(pl.LightningModule):
         images, labels = batch
         outputs = self(images)
         loss = self.criterion(outputs, labels)
+        _, preds = torch.max(outputs, 1)
+        acc = (preds == labels).float().mean()
+        self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log('train_acc', acc, on_step=False, on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -83,7 +87,7 @@ class ResNetGTSRB(pl.LightningModule):
         optimizer = optim.Adam(self.parameters(), lr=0.001)
         return optimizer
 
-def main():
+def main(version=0):
     data_module = GTSRBDataModule(
         train_csv='../gtsrb-german-traffic-sign/Train.csv',
         train_dir='../gtsrb-german-traffic-sign',
@@ -94,7 +98,7 @@ def main():
 
     model = ResNetGTSRB()
 
-    logger = CSVLogger("logs", name="resnet_gtsrb")
+    logger = CSVLogger("logs", name="resnet_gtsrb", version=version)
 
     trainer = pl.Trainer(
         max_epochs=3,
@@ -106,4 +110,4 @@ def main():
     trainer.validate(model, data_module.val_dataloader())
 
 if __name__ == '__main__':
-    main()
+    main(1)
