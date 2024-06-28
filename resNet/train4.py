@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import models
 from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 class GTSRBDataset(Dataset):
     def __init__(self, csv_file, root_dir, transform=None):
@@ -100,14 +101,24 @@ def main(version=0):
 
     logger = CSVLogger("logs", name="resnet_gtsrb", version=version)
 
+    # ModelCheckpoint callback to save the best model
+    # checkpoint_callback = ModelCheckpoint(
+    #     monitor='val_acc', 
+    #     dirpath='checkpoints', 
+    #     filename='resnet_gtsrb-{epoch:02d}-{val_acc:.2f}',
+    #     save_top_k=1,
+    #     mode='max'
+    # )
+
     trainer = pl.Trainer(
-        max_epochs=3,
+        max_epochs=1,
         accelerator='gpu' if torch.cuda.is_available() else 'cpu',
         devices=1 if torch.cuda.is_available() else None,
-        logger=logger
+        logger=logger,
+        # callbacks=[checkpoint_callback]
     )
     trainer.fit(model, data_module)
     trainer.validate(model, data_module.val_dataloader())
 
 if __name__ == '__main__':
-    main(1)
+    main(version=2)
