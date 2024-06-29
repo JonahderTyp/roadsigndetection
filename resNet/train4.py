@@ -39,7 +39,8 @@ class GTSRBDataModule(pl.LightningDataModule):
         self.test_dir = test_dir
         self.batch_size = batch_size
         self.transform = transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
@@ -85,7 +86,7 @@ class ResNetGTSRB(pl.LightningModule):
         self.log('val_acc', acc, prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.parameters(), lr=0.001)
+        optimizer = optim.Adam(self.parameters(), lr=0.0001)
         return optimizer
 
 def main(version=0):
@@ -111,7 +112,7 @@ def main(version=0):
     # )
 
     trainer = pl.Trainer(
-        max_epochs=1,
+        max_epochs=5,
         accelerator='gpu' if torch.cuda.is_available() else 'cpu',
         devices=1 if torch.cuda.is_available() else None,
         logger=logger,
@@ -121,4 +122,4 @@ def main(version=0):
     trainer.validate(model, data_module.val_dataloader())
 
 if __name__ == '__main__':
-    main(version=2)
+    main(version=6)
