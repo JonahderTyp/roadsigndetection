@@ -10,6 +10,7 @@ import torch.optim as optim
 from torchvision import models
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
+from torchmetrics.functional import accuracy, precision, recall, f1_score
 
 class GTSRBDataset(Dataset):
     def __init__(self, csv_file, root_dir, transform=None):
@@ -70,20 +71,37 @@ class ResNetGTSRB(pl.LightningModule):
         images, labels = batch
         outputs = self(images)
         loss = self.criterion(outputs, labels)
-        _, preds = torch.max(outputs, 1)
-        acc = (preds == labels).float().mean()
+        preds = torch.argmax(outputs, dim=1)
+        
+        acc = accuracy(preds, labels, task='multiclass', num_classes=43)
+        prec = precision(preds, labels, task='multiclass', average='macro', num_classes=43)
+        rec = recall(preds, labels, task='multiclass', average='macro', num_classes=43)
+        f1 = f1_score(preds, labels, task='multiclass', average='macro', num_classes=43)
+
         self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log('train_acc', acc, on_step=False, on_epoch=True, prog_bar=True)
+        self.log('train_precision', prec, on_step=False, on_epoch=True, prog_bar=True)
+        self.log('train_recall', rec, on_step=False, on_epoch=True, prog_bar=True)
+        self.log('train_f1', f1, on_step=False, on_epoch=True, prog_bar=True)
+
         return loss
 
     def validation_step(self, batch, batch_idx):
         images, labels = batch
         outputs = self(images)
         loss = self.criterion(outputs, labels)
-        _, preds = torch.max(outputs, 1)
-        acc = (preds == labels).float().mean()
+        preds = torch.argmax(outputs, dim=1)
+        
+        acc = accuracy(preds, labels, task='multiclass', num_classes=43)
+        prec = precision(preds, labels, task='multiclass', average='macro', num_classes=43)
+        rec = recall(preds, labels, task='multiclass', average='macro', num_classes=43)
+        f1 = f1_score(preds, labels, task='multiclass', average='macro', num_classes=43)
+
         self.log('val_loss', loss, prog_bar=True)
         self.log('val_acc', acc, prog_bar=True)
+        self.log('val_precision', prec, prog_bar=True)
+        self.log('val_recall', rec, prog_bar=True)
+        self.log('val_f1', f1, prog_bar=True)
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=0.0001)
@@ -102,24 +120,30 @@ def main(version=0):
 
     logger = CSVLogger("logs", name="resnet_gtsrb", version=version)
 
-    # ModelCheckpoint callback to save the best model
-    # checkpoint_callback = ModelCheckpoint(
-    #     monitor='val_acc', 
-    #     dirpath='checkpoints', 
-    #     filename='resnet_gtsrb-{epoch:02d}-{val_acc:.2f}',
-    #     save_top_k=1,
-    #     mode='max'
-    # )
+    # Create version directory
+    checkpoint_dir = os.path.join("checkpoints", f"version_{version}")
+    os.makedirs(checkpoint_dir, exist_ok=True)
+
+    # Add ModelCheckpoint callback to save model after every epoch
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=checkpoint_dir,
+        filename='resnet_gtsrb-{epoch:02d}-{val_loss:.2f}',
+        save_top_k=-1,  # Save all models
+        verbose=True,
+        save_last=True,
+        monitor='val_loss',
+        mode='min'
+    )
 
     trainer = pl.Trainer(
-        max_epochs=5,
+        max_epochs=100,
         accelerator='gpu' if torch.cuda.is_available() else 'cpu',
         devices=1 if torch.cuda.is_available() else None,
         logger=logger,
-        # callbacks=[checkpoint_callback]
+        callbacks=[checkpoint_callback]  # Include the checkpoint callback
     )
     trainer.fit(model, data_module)
     trainer.validate(model, data_module.val_dataloader())
 
 if __name__ == '__main__':
-    main(version=6)
+    main(version=10)

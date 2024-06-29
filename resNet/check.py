@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import models
+import matplotlib.pyplot as plt
 
 
 class ResNetGTSRB(pl.LightningModule):
@@ -61,21 +62,33 @@ def preprocess_image(image_path):
     image = image.unsqueeze(0)  # Add batch dimension
     return image
 
-# Function to make a prediction
+# Function to make a prediction and get the probability distribution
 def predict_image(model, image_path, class_names, device):
     image = preprocess_image(image_path).to(device)
     with torch.no_grad():
         outputs = model(image)
-        _, predicted = torch.max(outputs, 1)
-        predicted_class = class_names[predicted.item()]
-    return predicted_class
+        probabilities = torch.nn.functional.softmax(outputs, dim=1)[0]
+        predicted_class = class_names[torch.argmax(probabilities).item()]
+    return predicted_class, probabilities.cpu().numpy()
+
+# Function to plot the distribution of predicted probabilities
+def plot_distribution(probabilities, class_names):
+    plt.figure(figsize=(12, 6))
+    plt.bar(range(len(probabilities)), probabilities)
+    plt.xlabel('Class ID')
+    plt.ylabel('Probability')
+    plt.title('Predicted Class Probabilities')
+    plt.xticks(range(len(class_names)), class_names, rotation=90)
+    # plt.show()
 
 
 # Load class names (ensure this matches how the dataset was loaded/trained)
 class_names = pd.read_csv('../gtsrb-german-traffic-sign/Meta.csv')['ClassId'].tolist()  # Adjust path and column name as necessary
+class_names.sort()
+print(class_names)
 
 # Path to the saved model checkpoint
-checkpoint_path = './logs/resnet_gtsrb/version_2/checkpoints/epoch=0-step=1226.ckpt'  # Adjust filename as necessary
+checkpoint_path = 'C:/Users/jonah/development/roadsigndetection/resNet/logs/resnet_gtsrb/version_6/checkpoints/epoch=4-step=6130.ckpt'  # Adjust filename as necessary
 
 # Determine the device (CPU or GPU)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -84,8 +97,10 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = load_model(checkpoint_path).to(device)
 
 # Path to the image to be predicted
-image_path = 'C:/Users/jonah/development/roadsigndetection/gtsrb-german-traffic-sign/Train/38/00038_00062_00018.png'  # Replace with the actual image path
+image_path = 'C:/Users/jonah/development/roadsigndetection/gtsrb-german-traffic-sign/Train/30/00030_00001_00021.png'  # Replace with the actual image path
 
 # Make a prediction
-predicted_class = predict_image(model, image_path, class_names, device)
+predicted_class, probabilities = predict_image(model, image_path, class_names, device)
 print(f'The predicted class is: {predicted_class}')
+
+plot_distribution(probabilities, class_names)
