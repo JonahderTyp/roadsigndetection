@@ -166,3 +166,4 @@ gtsrb-german-traffic-sign
 *.zip
 resNet/logs/*
 resNet/checkpoints/*
+resNet/false_labels/*

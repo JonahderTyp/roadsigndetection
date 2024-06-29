@@ -88,7 +88,7 @@ class_names.sort()
 print(class_names)
 
 # Path to the saved model checkpoint
-checkpoint_path = 'C:/Users/jonah/development/roadsigndetection/resNet/logs/resnet_gtsrb/version_6/checkpoints/epoch=4-step=6130.ckpt'  # Adjust filename as necessary
+checkpoint_path = 'C:/Users/jonah/development/roadsigndetection/resNet/checkpoints/version_10/resnet_gtsrb-epoch=99-val_loss=0.05.ckpt'  # Adjust filename as necessary
 
 # Determine the device (CPU or GPU)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
