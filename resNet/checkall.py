@@ -7,6 +7,7 @@ import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 from torchvision import models
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -111,12 +112,10 @@ class ResNetGTSRB(pl.LightningModule):
         optimizer = optim.Adam(self.parameters(), lr=0.0001)
         return optimizer
 
-
 def draw_text(image, text, position):
     draw = ImageDraw.Draw(image)
     font = ImageFont.load_default()
     draw.text(position, text, font=font, fill=(255, 0, 0))
-
 
 def test_model(checkpoint_path, test_csv, test_dir, meta_csv):
     # Load the trained model from the checkpoint
@@ -151,7 +150,7 @@ def test_model(checkpoint_path, test_csv, test_dir, meta_csv):
     ])
 
     # Directory to save falsely labeled images
-    false_label_dir = 'false_labels'
+    false_label_dir = 'false_labels_gen16'
     os.makedirs(false_label_dir, exist_ok=True)
 
     # Iterate over test data
@@ -163,7 +162,8 @@ def test_model(checkpoint_path, test_csv, test_dir, meta_csv):
         labels = labels.to(device)
 
         outputs = model(images)
-        preds = torch.argmax(outputs, dim=1)
+        probs = F.softmax(outputs, dim=1)
+        preds = torch.argmax(probs, dim=1)
 
         # Find falsely labeled images
         for i in range(len(labels)):
@@ -178,15 +178,17 @@ def test_model(checkpoint_path, test_csv, test_dir, meta_csv):
                 predicted_class = preds[i].item()
                 actual_class_name = class_id_to_name[actual_class]
                 predicted_class_name = class_id_to_name[predicted_class]
-                text = f"Actual: {actual_class} - {actual_class_name}\n Predicted: {predicted_class} - {predicted_class_name}"
+                confidence = probs[i][predicted_class].item()
+                text = f"Actual: {actual_class} - {actual_class_name}\nPredicted: {predicted_class} - {predicted_class_name}\nConfidence: {confidence:.2f}"
                 draw_text(img_pil, text, position=(10, 10))
 
                 save_path = os.path.join(false_label_dir, os.path.basename(img_name))
                 img_pil.save(save_path)
-                print(f'Saved {save_path} as label {actual_class} ({actual_class_name}) was misclassified as {predicted_class} ({predicted_class_name})')
+                print(f'Saved {save_path} as label {actual_class} ({actual_class_name}) was misclassified as {predicted_class} ({predicted_class_name}) with confidence {confidence:.2f}')
 
 if __name__ == '__main__':
-    checkpoint_path = 'checkpoints/version_10/resnet_gtsrb-epoch=99-val_loss=0.05.ckpt'
+    # checkpoint_path = 'checkpoints/version_10/resnet_gtsrb-epoch=99-val_loss=0.05.ckpt'
+    checkpoint_path = 'checkpoints/version_10/resnet_gtsrb-epoch=16-val_loss=0.02.ckpt'
     test_csv = '../gtsrb-german-traffic-sign/Test.csv'
     test_dir = '../gtsrb-german-traffic-sign'
     meta_csv = '../gtsrb-german-traffic-sign\Meta.csv'
